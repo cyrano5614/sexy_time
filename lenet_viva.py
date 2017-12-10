@@ -81,8 +81,8 @@ Model Fitting & Evaluating
 """
 if args['load_model'] < 1:
     print('[INFO] Training...')
-    model.fit_generator(train_generator, steps_per_epoch=len(train_imgs)/batch_size, epochs=args['epochs'],
-                        validation_data=valid_generator, validation_steps=len(valid_imgs)/batch_size, verbose=1)
+    model.fit_generator(train_generator, steps_per_epoch=len(train_imgs)//batch_size, epochs=args['epochs'],
+                        validation_data=valid_generator, validation_steps=len(valid_imgs)//batch_size, verbose=1)
 
     print('[INFO] Evaluating...')
     (loss, accuracy) = model.evaluate_generator(test_generator, verbose=1)
