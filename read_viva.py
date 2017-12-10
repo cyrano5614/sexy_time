@@ -123,12 +123,12 @@ def crop_images(img_path, box_path, img_size, negative=False):
     out_images = []
     out_labels = []
 
+    x_off = img_size[0]
+    y_off = img_size[1]
+
     if negative == True:
 
         while len(out_images) < req_numb:
-
-            x_off = 128
-            y_off = 128
 
             x_1 = np.random.randint(0, img.shape[0] - x_off)
             y_1 = np.random.randint(0, img.shape[1] - y_off)
@@ -150,10 +150,12 @@ def crop_images(img_path, box_path, img_size, negative=False):
 
                 else:
 
-                    cropped = img[y_1:y_2, x_1:x_2, :]
+                    # NOTE: another caution for row and height...
+                    cropped = img[x_1:x_2, y_1:y_2, :]
                     cropped = cv2.resize(cropped, img_size)
                     out_images.append(cropped)
                     out_labels.append('WTF MATE')
+                    break
 
         return out_images, out_labels
 
