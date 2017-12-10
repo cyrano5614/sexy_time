@@ -6,6 +6,8 @@ import glob
 import numpy as np
 import cv2
 import matplotlib.image as mpimg
+import matplotlib.pyplot as plt
+from random import random
 
 
 def load_viva(path):
@@ -69,7 +71,7 @@ def visualize_box(img, boxes):
     return out_img
 
 
-def crop_images(img_path, box_path):
+def crop_images(img_path, box_path, img_size, negative=False):
     """crop_images
     Takes input image and box coordinates and returns cropped out images
 
@@ -83,22 +85,40 @@ def crop_images(img_path, box_path):
     out_images = []
     out_labels = []
 
+    if negative == True:
+        # blahhhahahahahahahahahahah
+        pass
+
+
     for box in boxes:
 
-        cropped = img[box[1][0]:box[2][0], box[1][1]:box[2][1], :]
+        # NOTE: keep in mind height and row switching in numpy array!!
+        cropped = img[box[1][1]:box[2][1], box[1][0]:box[2][0], :]
+        cropped = cv2.resize(cropped, img_size)
         out_images.append(cropped)
         out_labels.append(box[0])
 
     return out_images, out_labels
 
 
-def generate_batch(img_list, box_list, img_size, batch_size):
+def generate_batch(img_list, box_list, img_size, batch_size, negative=False):
+    """generate_batch
+    Takes file paths and generate a batch of images and labels to plugin to
+    training pipeline.  Augmentation can be also implemented here.
+
+    :param img_list: list of image file path
+    :param box_list: list of box file path
+    :param img_size: img size for the generator to generate
+    :param batch_size: batch size
+    """
 
     while True:
 
         batch_images = np.empty((batch_size, img_size[0],
-                                 img_size[1], img_size[2]))
-        batch_labels = np.empty(batch_size)
+                                 img_size[1], 3))
+        # batch_labels = np.empty(batch_size, str)
+        # Change this later to numpy array with one hot encoding possibly
+        batch_labels = []
 
         batch_full = False
 
@@ -110,12 +130,22 @@ def generate_batch(img_list, box_list, img_size, batch_size):
             img_path = img_list[index]
             box_path = box_list[index]
 
-            out_images, out_labels = crop_images(img_path, box_path)
+            if random() < 0.5:
+
+                out_images, out_labels = crop_images(img_path, box_path,
+                                                     img_size=img_size)
+
+            else:
+
+                out_images, out_labels = crop_images(img_path, box_path,
+                                                     img_size=img_size,
+                                                     negative=True)
 
             for img, label in zip(out_images, out_labels):
 
                 batch_images[batch_count] = img
-                batch_labels[batch_count] = label
+                # batch_labels[batch_count] = label
+                batch_labels.append(label)
                 batch_count += 1
 
                 if batch_count == batch_size:
@@ -123,6 +153,26 @@ def generate_batch(img_list, box_list, img_size, batch_size):
                     break
 
         yield batch_images, batch_labels
+
+
+def batch_visualize(batch_images, batch_labels):
+    """batch_visualize
+    Visualize batch of generate images along with labels
+
+    :param batch_images: output from generate_batch function
+    :param batch_labels: output from generate_batch function
+    """
+
+    plt.figure(figsize=(16, 8))
+
+    for i in range(10):
+
+        plt.subplot(2, 5, i + 1)
+        plt.imshow(batch_images[i])
+        plt.title(batch_labels[i])
+
+    plt.show()
+
 
 
 
