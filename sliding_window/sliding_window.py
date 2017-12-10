@@ -1,3 +1,7 @@
+"""
+Sliding Search Window & Heat Mapping Functions
+"""
+
 import cv2
 import numpy as np
 from scipy.ndimage.measurements import label
@@ -5,6 +9,16 @@ from scipy.ndimage.measurements import label
 
 def slide_window(img, x_start_stop=[None, None], y_start_stop=[None, None],
                  xy_window=(64, 64), xy_overlap=(0.5, 0.5)):
+    """slide_window
+    Creates windows across the given image
+    Returns a list of windows
+
+    :param img: the img to get the windows from
+    :param x_start_stop: the start and stop points on the x-axis
+    :param y_start_stop: the start and stop points on the y-axis
+    :param xy_window: the size of the window to return
+    :param xy_overlap: the overlap of adjacent windows that are returned
+    """
     # If x and/or y start/stop positions not defined, set to image size
     if x_start_stop[0] == None:
         x_start_stop[0] = 0
@@ -49,6 +63,17 @@ def slide_window(img, x_start_stop=[None, None], y_start_stop=[None, None],
 
 
 def search_windows(prediction_method, img, windows, xy_window=(64, 64)):
+    """search_windows
+    Uses the prediction method to determine which windows that are positive
+    Returns a list of windows
+
+    :param prediction_method: 
+        the prediction method relevant to the model
+        it must return a boolean based on it's prediction criteria
+    :param img: the image that is being searched
+    :param windows: the windows of the image that are to be predicted on
+    :param xy_window: the size of the window
+    """
     print('Starting to search {} windows'.format(len(windows)))
     on_windows = []
     for window in windows:
@@ -65,7 +90,16 @@ def search_windows(prediction_method, img, windows, xy_window=(64, 64)):
 
 
 def heatmap_windows(img, on_windows, threshold):
-        # array of zeros with image dimensions
+    """heatmap_windows
+    Heat maps the image based on the windows that a given
+    Returns the image with heatmapping
+
+    :param img: the image to heat map
+    :param on_windows: the windows that will apply the heat map
+    :param threshold: the required threshold heat
+
+    """
+    # array of zeros with image dimensions
     zeros = np.zeros_like(img[:, :, 0]).astype(np.float)
     # adding heat (+1) per on_window pixel
     heat = add_heat(zeros, on_windows)
@@ -73,8 +107,12 @@ def heatmap_windows(img, on_windows, threshold):
     heat_thresh = apply_threshold(heat, threshold)
     heatmap = np.clip(heat_thresh, 0, 255)
     labels = label(heatmap)
-    
+
     return draw_labeled_bboxes(img.copy(), labels)
+
+"""
+Heat Mapping Helper Functions
+"""
 
 
 def add_heat(heatmap, bbox_list):
