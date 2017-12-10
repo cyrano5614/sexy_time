@@ -50,6 +50,5 @@ if args['load_model'] < 0:
     print('[INFO] Accuracy: {:.2f}%'.format(accuracy * 100))
 
 if args['save_model'] > 0:
-	print('[INFO] Dumping weights to file...')
-	model.save_weights(args['weights'], overwrite=True)
-	
+    print('[INFO] Dumping weights to file...')
+    model.save_weights(args['weights'], overwrite=True)
