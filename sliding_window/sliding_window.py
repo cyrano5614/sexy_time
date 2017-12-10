@@ -91,7 +91,7 @@ def search_windows(prediction_method, img, windows, xy_window=(64, 64)):
 
 def heatmap_windows(img, on_windows, threshold):
     """heatmap_windows
-    Heat maps the image based on the windows that a given
+    Heat maps the image based on the on-windows that are given
     Returns the image with heatmapping
 
     :param img: the image to heat map
