@@ -19,14 +19,18 @@ ap.add_argument('-s', '--save-model', type=int, default=1,
                 help='(optional) whether or not the model should be saved to disk')
 ap.add_argument('-l', '--load-model', type=int, default=0,
                 help='(optional) whether or not a pre-trained model should be loaded')
-ap.add_argument('-w', '--weights-path', type=str,
+ap.add_argument('-w', '--weights-path', type=str, default='models/viva_weights.hdf5',
                 help='(optional) path to the weights file')
 ap.add_argument('-d', '--dataset-path', type=str, default='./data/detectiondata/train/',
                 help='(optional) path to the VIVA dataset')
+ap.add_argument('-e', '--epochs', type=int, default=20,
+                help='(optional) number of epochs')
+ap.add_argument('-b', '--batch-size', type=int, default=20,
+                help='(optional) the batch size')
 args = vars(ap.parse_args())
 
 img_size = (224, 224)
-batch_size = 20
+batch_size = args['batch_size']
 
 """
 Data Preprocessing
@@ -77,7 +81,7 @@ Model Fitting & Evaluating
 """
 if args['load_model'] < 1:
     print('[INFO] Training...')
-    model.fit_generator(train_generator, steps_per_epoch=len(train_imgs)/batch_size, epochs=20,
+    model.fit_generator(train_generator, steps_per_epoch=len(train_imgs)/batch_size, epochs=args['epochs'],
                         validation_data=valid_generator, validation_steps=len(valid_imgs)/batch_size, verbose=1)
 
     print('[INFO] Evaluating...')
