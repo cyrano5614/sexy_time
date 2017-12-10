@@ -1,1 +1,1 @@
-from viva.cnn.networks.lenet import LeNet
+from viva import *

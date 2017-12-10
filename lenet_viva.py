@@ -1,4 +1,5 @@
 from viva.cnn.networks.lenet import LeNet
+from viva.cnn.networks.xception_transfer import Xception_Transfer
 from keras.optimizers import SGD
 from keras.utils import np_utils
 import numpy as np
@@ -26,6 +27,10 @@ print('[INFO] Preparing the data...')
 dataset = None
 (train_data, test_data, train_labels, test_labels) = (None, None, None, None)
 
+train_generator = None
+valid_generator = None
+test_generator = None
+
 # transforming the labels into a vector of 0 or 1 number of classes
 # VIVA is either positive or negative so 2 classes
 train_labels = np_utils.to_categorical(train_labels, 2)
@@ -36,10 +41,15 @@ print('[INFO] Compiling the model...')
 # optimizing with Stochastic Gradient Descent with a learning rate or 0.01
 optimizer = SGD(lr=0.01)
 # selecting model
-model = None
-if args['model'] == 'lenet':
+model_name = args['model']
+if model_name == 'lenet':
     model = LeNet.build(width=28, height=28, depth=1, classes=2,
                         weights_path=args['weights_path'] if args['load_model'] > 0 else None)
+elif model_name == 'xception':
+    bottleneck_features = extract_bottleneck_Xception(train_generator, valid_generator, test_generator,
+                                                      img_shape=(28, 28, 3), num_samples=5000, batch_size=20)
+    model = Xception_Transfer.build(bottleneck_features['train']['features'],
+                                    bottleneck_features['test']['labels'])
 else:
     model = LeNet.build(width=28, height=28, depth=1, classes=2,
                         weights_path=args['weights_path'] if args['load_model'] > 0 else None)
