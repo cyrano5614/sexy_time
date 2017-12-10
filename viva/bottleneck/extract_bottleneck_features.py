@@ -7,7 +7,7 @@ import numpy as np
 
 
 def extract_bottleneck_Xception(train_generator, valid_generator, test_generator,
-                                img_shape, num_samples, batch_size=20):
+                                img_shape, batch_size=20):
 	"""extract_bottleneck_Xception
 	Extracts bottleneck features from the Xception model with stock imagenet weights.
 	The top is not included.
@@ -19,8 +19,9 @@ def extract_bottleneck_Xception(train_generator, valid_generator, test_generator
 	:param num_samples: the number of samples
 	:param batch_size: the size of the batch
 	"""
-    return extract_bottleneck(Xception(weights='imagenet', include_top=False, input_shape=(
-        img_shape[0], img_shape[1], img_shape[2])))
+    return extract_bottleneck(Xception(weights='imagenet', include_top=False), 
+        input_shape=(img_shape[0], img_shape[1], img_shape[2]), 
+        train_generator, valid_generator, test_generator, batch_size=batch_size)
 
 
 """
@@ -29,7 +30,7 @@ Helper Functions
 
 
 def extract_bottleneck(model, train_generator, valid_generator, test_generator,
-                       img_shape, num_samples, batch_size=20):
+                       img_shape, batch_size=20):
     train_features, train_labels = extract_features_labels(
         model, train_generator, num_samples, batch_size)
     valid_features, valid_labels = extract_features_labels(
@@ -52,6 +53,7 @@ def extract_bottleneck(model, train_generator, valid_generator, test_generator,
         }
     }
 
+# TODO: Number of samples is not passed through here. Can we get it with the generator? Otherwise we'll have to pass each train, valid, test number in
 
 def extract_features_labels(model, generator, num_samples, batch_size):
     """extract_bottleneck
