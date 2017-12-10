@@ -155,7 +155,8 @@ def crop_images(img_path, box_path, img_size, negative=False):
                     cropped = img[x_1:x_2, y_1:y_2, :]
                     cropped = cv2.resize(cropped, img_size)
                     out_images.append(cropped)
-                    out_labels.append('WTF MATE')
+                    # out_labels.append('WTF MATE')
+                    out_labels.append(0)
                     break
 
         return out_images, out_labels
@@ -168,7 +169,8 @@ def crop_images(img_path, box_path, img_size, negative=False):
             cropped = img[box[1][1]:box[2][1], box[1][0]:box[2][0], :]
             cropped = cv2.resize(cropped, img_size)
             out_images.append(cropped)
-            out_labels.append('HAND')
+            # out_labels.append('HAND')
+            out_labels.append(1)
 
         return out_images, out_labels
 
@@ -222,7 +224,7 @@ def generate_batch(img_list, box_list, img_size, batch_size, negative=False):
 
                 if batch_count == batch_size:
                     batch_full = True
-                    batch_labels = np_utils.to_categorical(batch_labels, 2)
+                    batch_labels = np_utils.to_categorical(batch_labels)
                     break
 
         yield batch_images, batch_labels
