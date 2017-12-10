@@ -98,4 +98,4 @@ def extract_features_labels(model, generator, batch_size):
     #     if interval == num_samples:
     #         break
 
-    return temp_features, temp_labels
+    return features, labels
