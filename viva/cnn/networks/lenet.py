@@ -6,7 +6,7 @@ from keras.layers.core import Flatten
 from keras.layers.core import Dense
 
 
-class Lenet:
+class LeNet:
 
     @staticmethod
     def build(width, height, depth, classes, weights_path=None):

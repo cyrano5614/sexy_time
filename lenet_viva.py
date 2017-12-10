@@ -1,4 +1,4 @@
-from viva.cnn.networks import LeNet
+from viva.cnn.networks.lenet import LeNet
 from keras.optimizers import SGD
 from keras.utils import np_utils
 import numpy as np
