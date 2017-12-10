@@ -55,7 +55,7 @@ def extract_bottleneck(model, train_generator, valid_generator, test_generator,
 
 # TODO: Number of samples is not passed through here. Can we get it with the generator? Otherwise we'll have to pass each train, valid, test number in
 
-def extract_features_labels(model, generator, num_samples, batch_size):
+def extract_features_labels(model, generator, batch_size):
     """extract_bottleneck
 
     A function to extract bottleneck features from the pretrained Keras model.
@@ -72,27 +72,30 @@ def extract_features_labels(model, generator, num_samples, batch_size):
     TODO: wrong batch size might give error with this right now.
     """
 
-    width = model.output_shape[1]
-    height = model.output_shape[2]
-    channel = model.output_shape[3]
+    # width = model.output_shape[1]
+    # height = model.output_shape[2]
+    # channel = model.output_shape[3]
 
-    temp_features = np.empty([num_samples, height, width, channel])
-    temp_labels = np.empty([num_samples, len(generator.class_indices)])
+    # temp_features = np.empty([batch_size, height, width, channel])
+    # temp_labels = np.empty([batch_size, len(generator.class_indices)])
 
-    start = 0
+    # start = 0
 
-    while True:
-        interval = start + batch_size
-        if interval >= num_samples:
-            interval = num_samples
-        features, labels = generator.next()
-        features = model.predict_on_batch(features)
-        temp_features[start:interval] = features
-        temp_labels[start:interval] = labels
+    features, labels = next(generator)
+    features = model.predict_on_batch(features)
 
-        start = interval
+    # while True:
+    #     interval = start + batch_size
+    #     if interval >= num_samples:
+    #         interval = num_samples
+    #     features, labels = generator.next()
+    #     features = model.predict_on_batch(features)
+    #     temp_features[start:interval] = features
+    #     temp_labels[start:interval] = labels
 
-        if interval == num_samples:
-            break
+    #     start = interval
+
+    #     if interval == num_samples:
+    #         break
 
     return temp_features, temp_labels

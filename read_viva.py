@@ -224,7 +224,7 @@ def generate_batch(img_list, box_list, img_size, batch_size, negative=False):
 
                 if batch_count == batch_size:
                     batch_full = True
-                    batch_labels = np_utils.to_categorical(batch_labels)
+                    batch_labels = np_utils.to_categorical(batch_labels, 2)
                     break
 
         yield batch_images, batch_labels
