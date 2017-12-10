@@ -1,5 +1,5 @@
 from keras.models import Sequential
-from keras.layers.convolutional import Convolution2D
+from keras.layers.convolutional import Conv2D
 from keras.layers.convolutional import MaxPooling2D
 from keras.layers.core import Activation
 from keras.layers.core import Flatten
@@ -24,8 +24,8 @@ class LeNet:
 
         # first set CONV => RELU => POOL
         # The first layer will learn 20 convolution filters, each the size 5x5
-        model.add(Convolution2D(20, 5, 5, border_mode='same'),
-                  input_shape=(depth, height, width))
+        model.add(Conv2D(20, (5, 5), padding='same',
+                         input_shape=(depth, height, width)))
         # ReLu activation function
         model.add(Activation('relu'))
         # 2x2 max-pooling in both x and y direction with a stride of 2
@@ -37,7 +37,7 @@ class LeNet:
         # 50 convolution filters
         # generally, convolutional layers deepen in layers as the image data is
         # abstracted into filters
-        model.add(Convolution2D(50, 5, 5, border_mode='same'))
+        model.add(Conv2D(50, (5, 5), padding='same'))
         model.add(Activation('relu'))
         model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
 
