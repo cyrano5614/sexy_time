@@ -7,6 +7,8 @@ import cv2
 
 # command line arguments
 ap = argparse.ArgumentParser()
+ap.add_argument('-m', '--model', type=str, default='lenet',
+                help='(optional) select the model to train')
 ap.add_argument('-s', '--save-model', type=int, default=1,
                 help='(optional) whether or not the model should be saved to disk')
 ap.add_argument('-l', '--load-model', type=int, default=1,
@@ -33,11 +35,16 @@ test_labels = np_utils.to_categorical(test_labels, 2)
 print('[INFO] Compiling the model...')
 # optimizing with Stochastic Gradient Descent with a learning rate or 0.01
 optimizer = SGD(lr=0.01)
-# TODO: Figure out what the dimentions are for the input image
-model = LeNet.build(width=28, height=28, depth=1, classes=2,
-                    weights_path=args['weights_path'] if args['load_model'] > 0 else None)
-# binary cross-entropy for loss function as theres only two classes
-model.compile(loss='binary_crossentropy',
+# selecting model
+model = None
+if args['model'] == 'lenet':
+    model = LeNet.build(width=28, height=28, depth=1, classes=2,
+                        weights_path=args['weights_path'] if args['load_model'] > 0 else None)
+else:
+    model = LeNet.build(width=28, height=28, depth=1, classes=2,
+                        weights_path=args['weights_path'] if args['load_model'] > 0 else None)
+# categorical cross-entropy for loss function
+model.compile(loss='categorical_crossentropy',
               optimizer=optimizer, metrics=['accuracy'])
 
 if args['load_model'] < 0:
