@@ -8,6 +8,7 @@ import cv2
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 from random import random
+from keras.utils import np_utils
 
 
 class Point(object):
@@ -167,7 +168,7 @@ def crop_images(img_path, box_path, img_size, negative=False):
             cropped = img[box[1][1]:box[2][1], box[1][0]:box[2][0], :]
             cropped = cv2.resize(cropped, img_size)
             out_images.append(cropped)
-            out_labels.append(box[0])
+            out_labels.append('HAND')
 
         return out_images, out_labels
 
@@ -221,6 +222,7 @@ def generate_batch(img_list, box_list, img_size, batch_size, negative=False):
 
                 if batch_count == batch_size:
                     batch_full = True
+                    batch_labels = np_utils.to_categorical(batch_labels, 2)
                     break
 
         yield batch_images, batch_labels

@@ -24,8 +24,9 @@ class LeNet:
 
         # first set CONV => RELU => POOL
         # The first layer will learn 20 convolution filters, each the size 5x5
+        # the backend is TensorFlow is input_shape should be (h, w, d)
         model.add(Conv2D(20, (5, 5), padding='same',
-                         input_shape=(depth, height, width)))
+                         input_shape=(height, width, depth)))
         # ReLu activation function
         model.add(Activation('relu'))
         # 2x2 max-pooling in both x and y direction with a stride of 2
