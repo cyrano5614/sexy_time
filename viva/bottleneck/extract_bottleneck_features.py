@@ -16,7 +16,6 @@ def extract_bottleneck_Xception(train_generator, valid_generator, test_generator
 	:param valid_generator: the validation data generator
 	:param test_generator: the test data generator
 	:param img_shape: a tuple with the image width, height and number of channels
-	:param num_samples: the number of samples
 	:param batch_size: the size of the batch
 	"""
     return extract_bottleneck(Xception(weights='imagenet', include_top=False), input_shape=img_shape, 

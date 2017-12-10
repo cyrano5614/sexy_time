@@ -65,7 +65,7 @@ if model_name == 'lenet':
                         weights_path=args['weights_path'] if args['load_model'] > 0 else None)
 elif model_name == 'xception':
     bottleneck_features = extract_bottleneck_Xception(train_generator, valid_generator, test_generator,
-                                                      img_shape=(img_size[0], img_size[1], 3), num_samples=5000, batch_size=batch_size)
+                                                      img_shape=(img_size[0], img_size[1], 3), batch_size=batch_size)
     model = Xception_Transfer.build(bottleneck_features['train']['features'],
                                     bottleneck_features['train']['labels'])
 else:
