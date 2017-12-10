@@ -10,6 +10,28 @@ import matplotlib.pyplot as plt
 from random import random
 
 
+class Point(object):
+    """Point"""
+
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+
+class Rect(object):
+    """Rect"""
+
+    def __init__(self, p1, p2):
+        '''Store the top, bottom, left and right values for points
+               p1 and p2 are the (corners) in either order
+        '''
+
+        self.left = min(p1.x, p2.x)
+        self.right = max(p1.x, p2.x)
+        self.bottom = min(p1.y, p2.y)
+        self.top = max(p1.y, p2.y)
+
+
 def load_viva(path):
     """load_viva
     Loads VIVA dataset file names sorted into list.
@@ -71,6 +93,20 @@ def visualize_box(img, boxes):
     return out_img
 
 
+def overlap(r1, r2):
+    '''Overlapping rectangles overlap both horizontally & vertically
+    '''
+    return (range_overlap(r1.left, r1.right, r2.left, r2.right) and
+            range_overlap(r1.bottom, r1.top, r2.bottom, r2.top))
+
+
+def range_overlap(a_min, a_max, b_min, b_max):
+    '''Neither range is completely greater than the other
+    '''
+
+    return (a_min <= b_max) and (b_min <= a_max)
+
+
 def crop_images(img_path, box_path, img_size, negative=False):
     """crop_images
     Takes input image and box coordinates and returns cropped out images
@@ -82,23 +118,56 @@ def crop_images(img_path, box_path, img_size, negative=False):
     img = mpimg.imread(img_path)
     boxes = extract_box(box_path)
 
+    req_numb = len(boxes)
+
     out_images = []
     out_labels = []
 
     if negative == True:
-        # blahhhahahahahahahahahahah
-        pass
 
+        while len(out_images) < req_numb:
 
-    for box in boxes:
+            x_off = 128
+            y_off = 128
 
-        # NOTE: keep in mind height and row switching in numpy array!!
-        cropped = img[box[1][1]:box[2][1], box[1][0]:box[2][0], :]
-        cropped = cv2.resize(cropped, img_size)
-        out_images.append(cropped)
-        out_labels.append(box[0])
+            x_1 = np.random.randint(0, img.shape[0] - x_off)
+            y_1 = np.random.randint(0, img.shape[1] - y_off)
 
-    return out_images, out_labels
+            x_2 = x_1 + x_off
+            y_2 = y_1 + y_off
+
+            temp_rect = Rect(Point(x_1, y_1), Point(x_2, y_2))
+
+            for box in boxes:
+
+                p1 = Point(box[1][0], box[1][1])
+                p2 = Point(box[2][0], box[2][1])
+                box_rect = Rect(p1, p2)
+
+                if overlap(temp_rect, box_rect):
+
+                    pass
+
+                else:
+
+                    cropped = img[y_1:y_2, x_1:x_2, :]
+                    cropped = cv2.resize(cropped, img_size)
+                    out_images.append(cropped)
+                    out_labels.append('WTF MATE')
+
+        return out_images, out_labels
+
+    else:
+
+        for box in boxes:
+
+            # NOTE: keep in mind height and row switching in numpy array!!
+            cropped = img[box[1][1]:box[2][1], box[1][0]:box[2][0], :]
+            cropped = cv2.resize(cropped, img_size)
+            out_images.append(cropped)
+            out_labels.append(box[0])
+
+        return out_images, out_labels
 
 
 def generate_batch(img_list, box_list, img_size, batch_size, negative=False):
@@ -172,9 +241,6 @@ def batch_visualize(batch_images, batch_labels):
         plt.title(batch_labels[i])
 
     plt.show()
-
-
-
 
 
 def main():
