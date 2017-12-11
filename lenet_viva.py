@@ -85,7 +85,7 @@ if args['load_model'] < 1:
                         validation_data=valid_generator, validation_steps=len(valid_imgs)//batch_size, verbose=1)
 
     print('[INFO] Evaluating...')
-    (loss, accuracy) = model.evaluate_generator(test_generator, verbose=1)
+    (loss, accuracy) = model.evaluate_generator(test_generator)
     print('[INFO] Accuracy: {:.2f}%'.format(accuracy * 100))
 
 if args['save_model'] > 0:
