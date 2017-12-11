@@ -228,7 +228,6 @@ def generate_batch(img_list, box_list, img_size, batch_size,
             for img, label in zip(out_images, out_labels):
 
                 batch_images[batch_count] = img
-                # batch_labels[batch_count] = label
                 batch_labels.append(label)
                 batch_count += 1
 

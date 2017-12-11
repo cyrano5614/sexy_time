@@ -33,6 +33,7 @@ args = vars(ap.parse_args())
 img_size = (128, 128)
 batch_size = args['batch_size']
 
+
 """
 Data Preprocessing
 """
