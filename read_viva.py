@@ -42,13 +42,19 @@ def load_viva(path):
     :param path: train or test directory path
     """
 
-    img_path = path + 'pos/'
-    box_path = path + 'posGt/'
+    train_img_path = path + 'train/pos/'
+    train_box_path = path + 'train/posGt/'
 
-    img_list = sorted(glob.glob(img_path + '*'))
-    box_list = sorted(glob.glob(box_path + '*'))
+    train_img_list = sorted(glob.glob(train_img_path + '*'))
+    train_box_list = sorted(glob.glob(train_box_path + '*'))
 
-    return img_list, box_list
+    test_img_path = path + 'test/pos/'
+    train_box_path = path + 'test/posGt/'
+
+    test_img_list = sorted(glob.glob(test_img_path + '*'))
+    test_box_list = sorted(glob.glob(train_box_path + '*'))
+
+    return train_img_list, train_box_list, test_img_list, test_box_list
 
 
 def extract_box(path):
@@ -176,7 +182,7 @@ def crop_images(img_path, box_path, img_size, negative=False):
         return out_images, out_labels
 
 
-def generate_batch(img_list, box_list, img_size, batch_size, 
+def generate_batch(img_list, box_list, img_size, batch_size,
                    negative=False,
                    model=None,
                    bottleneck=False):
@@ -223,7 +229,7 @@ def generate_batch(img_list, box_list, img_size, batch_size,
             else:
 
                 out_images, out_labels = crop_images(img_path, box_path,
-                                                 img_size=img_size)
+                                                     img_size=img_size)
 
             for img, label in zip(out_images, out_labels):
 
@@ -240,7 +246,6 @@ def generate_batch(img_list, box_list, img_size, batch_size,
 
             batch_images = preprocess_input(batch_images)
             batch_images = model.predict_on_batch(batch_images)
-
 
         yield batch_images, batch_labels
 

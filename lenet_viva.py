@@ -22,7 +22,7 @@ ap.add_argument('-l', '--load-model', type=int, default=0,
                 help='(optional) whether or not a pre-trained model should be loaded')
 ap.add_argument('-w', '--weights-path', type=str, default='models/viva_weights.hdf5',
                 help='(optional) path to the weights file')
-ap.add_argument('-d', '--dataset-path', type=str, default='./data/detectiondata/train/',
+ap.add_argument('-d', '--dataset-path', type=str, default='./data/detectiondata/',
                 help='(optional) path to the VIVA dataset')
 ap.add_argument('-e', '--epochs', type=int, default=20,
                 help='(optional) number of epochs')
@@ -39,13 +39,10 @@ Data Preprocessing
 """
 print('[INFO] Preparing the data...')
 path = args['dataset_path']
-img_list, box_list = load_viva(path)
-# Splitting into 60/20/20
-train_imgs, test_imgs, train_boxes, test_boxes = train_test_split(
-    img_list, box_list, test_size=0.2)
-train_imgs, valid_imgs, train_boxes, valid_boxes = train_test_split(
-    train_imgs, train_boxes, test_size=0.25)
-
+train_img_list, train_box_list, test_img_list, test_box_list = load_viva(path)
+# Splitting into train validation 75/25
+train_img_list, valid_img_list, train_box_list, valid_box_list = train_test_split(
+    train_img_list, train_box_list, test_size=0.25)
 
 
 """
@@ -61,18 +58,18 @@ if model_name == 'xception':
 
     bottleneck_model = pretrained_model('Xception', img_size)
 
-    train_generator = generate_batch(train_imgs, train_boxes,
+    train_generator = generate_batch(train_img_list, train_box_list,
                                      img_size=img_size, batch_size=batch_size,
                                      model=bottleneck_model,
-                                     bottleneck=True)
-    valid_generator = generate_batch(valid_imgs, valid_boxes,
+                                     bottleneck=True, negative=True)
+    valid_generator = generate_batch(valid_img_list, valid_box_list,
                                      img_size=img_size, batch_size=batch_size,
                                      model=bottleneck_model,
-                                     bottleneck=True)
-    test_generator = generate_batch(test_imgs, test_boxes,
+                                     bottleneck=True, negative=True)
+    test_generator = generate_batch(test_img_list, test_box_list,
                                     img_size=img_size, batch_size=batch_size,
                                     model=bottleneck_model,
-                                    bottleneck=True)
+                                    bottleneck=True, negative=True)
 
     x, y, z = bottleneck_model.output.shape[1:]
 
@@ -84,11 +81,11 @@ else:
                         weights_path=args['weights_path'] if args['load_model'] > 0 else None)
 
     train_generator = generate_batch(
-        train_imgs, train_boxes, img_size=img_size, batch_size=batch_size)
+        train_img_list, train_box_list, img_size=img_size, batch_size=batch_size, negative=True)
     valid_generator = generate_batch(
-        valid_imgs, valid_boxes, img_size=img_size, batch_size=batch_size)
+        valid_img_list, valid_box_list, img_size=img_size, batch_size=batch_size, negative=True)
     test_generator = generate_batch(
-        test_imgs, test_boxes, img_size=img_size, batch_size=batch_size)
+        test_img_list, test_box_list, img_size=img_size, batch_size=batch_size, negative=True)
 
 # categorical cross-entropy for loss function
 model.compile(loss='categorical_crossentropy',
@@ -100,11 +97,12 @@ Model Fitting & Evaluating
 """
 if args['load_model'] < 1:
     print('[INFO] Training...')
-    model.fit_generator(train_generator, steps_per_epoch=len(train_imgs)//batch_size, epochs=args['epochs'],
-                        validation_data=valid_generator, validation_steps=len(valid_imgs)//batch_size, verbose=1)
+    model.fit_generator(train_generator, steps_per_epoch=len(train_img_list)//batch_size, epochs=args['epochs'],
+                        validation_data=valid_generator, validation_steps=len(valid_img_list)//batch_size, verbose=1)
 
     print('[INFO] Evaluating...')
-    (loss, accuracy) = model.evaluate_generator(test_generator, steps=len(test_imgs)//batch_size)
+    (loss, accuracy) = model.evaluate_generator(
+        test_generator, steps=len(test_img_list)//batch_size)
     print('[INFO] Accuracy: {:.2f}%'.format(accuracy * 100))
 
 if args['save_model'] > 0:
