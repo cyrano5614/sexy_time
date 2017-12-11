@@ -150,81 +150,81 @@ def extract_bottleneck(generator, model, num_samples, batch_size):
 
     return temp_features, temp_labels
 
-def generate_bottleneck(model_name, img_path, augment = True, batch_size = 20, num_samples = 7000, augment=True, img_size=(128, 128)):
+# def generate_bottleneck(model_name, img_path, augment = True, batch_size = 20, num_samples = 7000, augment=True, img_size=(128, 128)):
 
-    if augment == True:
-        train_datagen = generate_train_directory(img_path,
-                                                 img_size=img_size,
-                                                 augment=augment,
-                                                 batch_size=batch_size)
+#     if augment == True:
+#         train_datagen = generate_train_directory(img_path,
+#                                                  img_size=img_size,
+#                                                  augment=augment,
+#                                                  batch_size=batch_size)
 
-        valid_datagen = generate_test_directory(img_path,
-                                                img_size=img_size,
-                                                augment=augment,
-                                                batch_size=batch_size)
+#         valid_datagen = generate_test_directory(img_path,
+#                                                 img_size=img_size,
+#                                                 augment=augment,
+#                                                 batch_size=batch_size)
 
-        test_datagen = generate_test_directory(img_path,
-                                               img_size=img_size,
-                                               augment=augment,
-                                               batch_size=batch_size)
+#         test_datagen = generate_test_directory(img_path,
+#                                                img_size=img_size,
+#                                                augment=augment,
+#                                                batch_size=batch_size)
 
-        base_model = pretrained_model(model_name=model_name, img_size=img_size)
+#         base_model = pretrained_model(model_name=model_name, img_size=img_size)
 
-        # Not neceassry right now but future customization
-        # for layer in base_model.layers:
-        #     layer.trainable = False
+#         # Not neceassry right now but future customization
+#         # for layer in base_model.layers:
+#         #     layer.trainable = False
 
-        train_size = num_samples
-        valid_size = int(num_samples * 0.2)
-        test_size = int(num_samples * 0.2)
+#         train_size = num_samples
+#         valid_size = int(num_samples * 0.2)
+#         test_size = int(num_samples * 0.2)
 
-        train_features, train_labels = extract_bottleneck(train_datagen,
-                                                          model=base_model,
-                                                          num_samples=train_size,
-                                                          batch_size=batch_size)
+#         train_features, train_labels = extract_bottleneck(train_datagen,
+#                                                           model=base_model,
+#                                                           num_samples=train_size,
+#                                                           batch_size=batch_size)
 
-        valid_features, valid_labels = extract_bottleneck(valid_datagen,
-                                                          model=base_model,
-                                                          num_samples=valid_size,
-                                                          batch_size=batch_size)
+#         valid_features, valid_labels = extract_bottleneck(valid_datagen,
+#                                                           model=base_model,
+#                                                           num_samples=valid_size,
+#                                                           batch_size=batch_size)
 
-        test_features, test_labels = extract_bottleneck(valid_datagen,
-                                                        model=base_model,
-                                                        num_samples=test_size,
-                                                        batch_size=batch_size)
+#         test_features, test_labels = extract_bottleneck(valid_datagen,
+#                                                         model=base_model,
+#                                                         num_samples=test_size,
+#                                                         batch_size=batch_size)
 
-    else:
+#     else:
 
-        train_datagen = generate_train_directory(img_path+'/train/',
-                                                 img_size=img_size,
-                                                 augment=augment,
-                                                 batch_size=batch_size)
+#         train_datagen = generate_train_directory(img_path+'/train/',
+#                                                  img_size=img_size,
+#                                                  augment=augment,
+#                                                  batch_size=batch_size)
 
-        valid_datagen = generate_test_directory(img_path+'/valid/',
-                                                img_size=img_size,
-                                                augment=augment,
-                                                batch_size=batch_size)
+#         valid_datagen = generate_test_directory(img_path+'/valid/',
+#                                                 img_size=img_size,
+#                                                 augment=augment,
+#                                                 batch_size=batch_size)
 
-        test_datagen = generate_test_directory(img_path+'/test/',
-                                               img_size=img_size,
-                                               augment=augment,
-                                               batch_size=batch_size)
+#         test_datagen = generate_test_directory(img_path+'/test/',
+#                                                img_size=img_size,
+#                                                augment=augment,
+#                                                batch_size=batch_size)
 
-        base_model = pretraiend_model(model_name=model_name, img_size=img_size)
+#         # base_model = pretraiend_model(model_name=model_name, img_size=img_size)
 
-        train_size = 
-
-
+#         # train_size = 
 
 
-    output = {'train_features': train_features,
-              'train_labels': train_labels,
-              'valid_features': valid_features,
-              'valid_labels': valid_labels,
-              'test_features': test_features,
-              'test_labels': test_labels}
 
-    return output
+
+#     output = {'train_features': train_features,
+#               'train_labels': train_labels,
+#               'valid_features': valid_features,
+#               'valid_labels': valid_labels,
+#               'test_features': test_features,
+#               'test_labels': test_labels}
+
+#     return output
 
 
 def bottleneck_model(data):

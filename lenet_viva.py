@@ -1,6 +1,7 @@
 from viva.cnn.networks.lenet import LeNet
 from viva.cnn.networks.xception_transfer import Xception_Transfer
 from read_viva import load_viva, generate_batch
+from pipeline import pretrained_model
 from keras.optimizers import SGD
 from keras.utils import np_utils
 from sklearn.model_selection import train_test_split
@@ -29,7 +30,7 @@ ap.add_argument('-b', '--batch-size', type=int, default=20,
                 help='(optional) the batch size')
 args = vars(ap.parse_args())
 
-img_size = (224, 224)
+img_size = (128, 128)
 batch_size = args['batch_size']
 
 """
@@ -44,12 +45,6 @@ train_imgs, test_imgs, train_boxes, test_boxes = train_test_split(
 train_imgs, valid_imgs, train_boxes, valid_boxes = train_test_split(
     train_imgs, train_boxes, test_size=0.25)
 
-train_generator = generate_batch(
-    train_imgs, train_boxes, img_size=img_size, batch_size=batch_size)
-valid_generator = generate_batch(
-    valid_imgs, valid_boxes, img_size=img_size, batch_size=batch_size)
-test_generator = generate_batch(
-    test_imgs, test_boxes, img_size=img_size, batch_size=batch_size)
 
 
 """
@@ -60,17 +55,40 @@ print('[INFO] Compiling the model...')
 optimizer = SGD(lr=0.01)
 # selecting model
 model_name = args['model']
-if model_name == 'lenet':
-    model = LeNet.build(width=img_size[0], height=img_size[1], depth=3, classes=2,
-                        weights_path=args['weights_path'] if args['load_model'] > 0 else None)
-elif model_name == 'xception':
-    bottleneck_features = extract_bottleneck_Xception(train_generator, valid_generator, test_generator,
-                                                      img_shape=(img_size[0], img_size[1], 3), batch_size=batch_size)
-    model = Xception_Transfer.build(bottleneck_features['train']['features'],
-                                    bottleneck_features['train']['labels'])
+
+if model_name == 'xception':
+
+    bottleneck_model = pretrained_model('Xception', img_size)
+
+    train_generator = generate_batch(train_imgs, train_boxes,
+                                     img_size=img_size, batch_size=batch_size,
+                                     model=bottleneck_model,
+                                     bottleneck=True)
+    valid_generator = generate_batch(valid_imgs, valid_boxes,
+                                     img_size=img_size, batch_size=batch_size,
+                                     model=bottleneck_model,
+                                     bottleneck=True)
+    test_generator = generate_batch(test_imgs, test_boxes,
+                                    img_size=img_size, batch_size=batch_size,
+                                    model=bottleneck_model,
+                                    bottleneck=True)
+
+    x, y, z = bottleneck_model.output.shape[1:]
+
+    model = Xception_Transfer.build((int(x), int(y), int(z)), 2)
+
 else:
+
     model = LeNet.build(width=img_size[0], height=img_size[1], depth=3, classes=2,
                         weights_path=args['weights_path'] if args['load_model'] > 0 else None)
+
+    train_generator = generate_batch(
+        train_imgs, train_boxes, img_size=img_size, batch_size=batch_size)
+    valid_generator = generate_batch(
+        valid_imgs, valid_boxes, img_size=img_size, batch_size=batch_size)
+    test_generator = generate_batch(
+        test_imgs, test_boxes, img_size=img_size, batch_size=batch_size)
+
 # categorical cross-entropy for loss function
 model.compile(loss='categorical_crossentropy',
               optimizer=optimizer, metrics=['accuracy'])

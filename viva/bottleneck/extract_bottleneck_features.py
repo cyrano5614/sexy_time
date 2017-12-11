@@ -2,24 +2,29 @@
 Bottleneck Feature Extraction Functions
 """
 
-from keras.applications.xception import Xception
+from keras.applications.xception import Xception, preprocess_input
 import numpy as np
 
 
 def extract_bottleneck_Xception(train_generator, valid_generator, test_generator,
                                 img_shape, batch_size=20):
-	"""extract_bottleneck_Xception
-	Extracts bottleneck features from the Xception model with stock imagenet weights.
-	The top is not included.
+    """extract_bottleneck_Xception
+    Extracts bottleneck features from the Xception model with stock imagenet weights.
+    The top is not included.
 
-	:param train_generator: the training data generator
-	:param valid_generator: the validation data generator
-	:param test_generator: the test data generator
-	:param img_shape: a tuple with the image width, height and number of channels
-	:param batch_size: the size of the batch
-	"""
-    return extract_bottleneck(Xception(weights='imagenet', include_top=False), input_shape=img_shape, 
-        train_generator, valid_generator, test_generator, batch_size=batch_size)
+    :param train_generator: the training data generator
+    :param valid_generator: the validation data generator
+    :param test_generator: the test data generator
+    :param img_shape: a tuple with the image width, height and number of channels
+    :param batch_size: the size of the batch
+    """
+    return (extract_bottleneck(Xception(weights='imagenet',
+                                        include_top=False),
+                               train_generator,
+                               valid_generator,
+                               test_generator,
+                               img_shape=img_shape,
+                               batch_size=batch_size))
 
 
 """
@@ -75,6 +80,7 @@ def extract_features_labels(model, generator, batch_size):
     # start = 0
 
     features, labels = next(generator)
+    features = preprocess_input(features)
     features = model.predict_on_batch(features)
 
     # while True:

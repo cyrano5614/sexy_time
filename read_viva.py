@@ -9,6 +9,7 @@ import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 from random import random
 from keras.utils import np_utils
+from keras.applications.xception import preprocess_input
 
 
 class Point(object):
@@ -175,7 +176,10 @@ def crop_images(img_path, box_path, img_size, negative=False):
         return out_images, out_labels
 
 
-def generate_batch(img_list, box_list, img_size, batch_size, negative=False):
+def generate_batch(img_list, box_list, img_size, batch_size, 
+                   negative=False,
+                   model=None,
+                   bottleneck=False):
     """generate_batch
     Takes file paths and generate a batch of images and labels to plugin to
     training pipeline.  Augmentation can be also implemented here.
@@ -204,16 +208,22 @@ def generate_batch(img_list, box_list, img_size, batch_size, negative=False):
             img_path = img_list[index]
             box_path = box_list[index]
 
-            if random() < 0.5:
+            if negative == True:
 
-                out_images, out_labels = crop_images(img_path, box_path,
-                                                     img_size=img_size)
+                if random() < 0.5:
 
+                    out_images, out_labels = crop_images(img_path, box_path,
+                                                         img_size=img_size)
+
+                else:
+
+                    out_images, out_labels = crop_images(img_path, box_path,
+                                                         img_size=img_size,
+                                                         negative=True)
             else:
 
                 out_images, out_labels = crop_images(img_path, box_path,
-                                                     img_size=img_size,
-                                                     negative=True)
+                                                 img_size=img_size)
 
             for img, label in zip(out_images, out_labels):
 
@@ -226,6 +236,12 @@ def generate_batch(img_list, box_list, img_size, batch_size, negative=False):
                     batch_full = True
                     batch_labels = np_utils.to_categorical(batch_labels, 2)
                     break
+
+        if bottleneck is True and model:
+
+            batch_images = preprocess_input(batch_images)
+            batch_images = model.predict_on_batch(batch_images)
+
 
         yield batch_images, batch_labels
 
