@@ -43,16 +43,16 @@ def load_viva(path):
     """
 
     train_img_path = path + 'train/pos/'
-    train_box_path = path + 'train/posGt/'
+    train_box_path = path + 'train/posGt/' 
 
     train_img_list = sorted(glob.glob(train_img_path + '*'))
     train_box_list = sorted(glob.glob(train_box_path + '*'))
 
     test_img_path = path + 'test/pos/'
-    train_box_path = path + 'test/posGt/'
+    test_box_path = path + 'test/posGt/'
 
     test_img_list = sorted(glob.glob(test_img_path + '*'))
-    test_box_list = sorted(glob.glob(train_box_path + '*'))
+    test_box_list = sorted(glob.glob(test_box_path + '*'))
 
     return train_img_list, train_box_list, test_img_list, test_box_list
 
