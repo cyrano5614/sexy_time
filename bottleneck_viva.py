@@ -1,6 +1,6 @@
 from viva.cnn.networks.lenet import LeNet
 from viva.cnn.networks.xception_transfer import Xception_Transfer
-from read_viva import load_viva, generate_batch
+from read_viva import load_viva, DataGen
 from pipeline import pretrained_model
 from keras.optimizers import SGD
 from keras.utils import np_utils
@@ -58,11 +58,11 @@ if model_name == 'xception':
 
     bottleneck_model = pretrained_model('Xception', img_size)
 
-    train_generator = generate_batch(train_img_list, train_box_list,
+    train_generator = DataGen.generate_train(train_img_list, train_box_list,
                                      img_size=img_size, batch_size=batch_size,
                                      model=bottleneck_model,
                                      bottleneck=True, negative=True)
-    valid_generator = generate_batch(valid_img_list, valid_box_list,
+    valid_generator = DataGen(img_size, batch_size).generate_train(valid_img_list, valid_box_list,
                                      img_size=img_size, batch_size=batch_size,
                                      model=bottleneck_model,
                                      bottleneck=True, negative=True)

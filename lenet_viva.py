@@ -1,6 +1,6 @@
 from viva.cnn.networks.lenet import LeNet
 from viva.cnn.networks.xception_transfer import Xception_Transfer
-from read_viva import load_viva, generate_batch
+from read_viva import load_viva, DataGen
 from pipeline import pretrained_model
 from keras.optimizers import SGD
 from keras.utils import np_utils
@@ -62,18 +62,21 @@ if model_name == 'xception':
 
     bottleneck_model = pretrained_model('Xception', img_size)
 
-    train_generator = generate_batch(train_img_list, train_box_list,
-                                     img_size=img_size, batch_size=batch_size,
-                                     model=bottleneck_model,
-                                     bottleneck=True, negative=True)
-    valid_generator = generate_batch(valid_img_list, valid_box_list,
-                                     img_size=img_size, batch_size=batch_size,
-                                     model=bottleneck_model,
-                                     bottleneck=True, negative=True)
-    test_generator = generate_batch(test_img_list, test_box_list,
-                                    img_size=img_size, batch_size=batch_size,
-                                    model=bottleneck_model,
-                                    bottleneck=True, negative=True)
+    train_generator = DataGen(img_size,
+                              batch_size,
+                              negative=True,
+                              bottleneck=True,
+                              model=bottleneck_model).generate_train(train_img_list, train_box_list)
+    valid_generator = DataGen(img_size,
+                              batch_size,
+                              negative=True,
+                              bottleneck=True,
+                              model=bottleneck_model).generate_train(valid_img_list, valid_box_list)
+    test_generator = DataGen(img_size,
+                              batch_size,
+                              negative=True,
+                              bottleneck=True,
+                              model=bottleneck_model).generate_train(test_img_list, test_box_list)
 
     x, y, z = bottleneck_model.output.shape[1:]
 
@@ -84,12 +87,18 @@ else:
     model = LeNet.build(width=img_size[0], height=img_size[1], depth=3, classes=2,
                         weights_path=args['weights_path'] if args['load_model'] > 0 else None)
 
-    train_generator = generate_batch(
-        train_img_list, train_box_list, img_size=img_size, batch_size=batch_size, negative=True)
-    valid_generator = generate_batch(
-        valid_img_list, valid_box_list, img_size=img_size, batch_size=batch_size, negative=True)
-    test_generator = generate_batch(
-        test_img_list, test_box_list, img_size=img_size, batch_size=batch_size, negative=True)
+    train_generator = DataGen(img_size,
+                              batch_size,
+                              negative=True).generate_train(train_img_list,
+                                                                   train_box_list)
+    valid_generator = DataGen(img_size,
+                              batch_size,
+                              negative=True).generate_train(valid_img_list,
+                                                                   valid_box_list)
+    test_generator = DataGen(img_size,
+                              batch_size,
+                              negative=True).generate_train(test_img_list,
+                                                                   test_box_list)
 
 # categorical cross-entropy for loss function
 model.compile(loss='categorical_crossentropy',
@@ -111,19 +120,19 @@ if args['load_model'] < 1:
                           patience=10,
                           verbose=1)
 
-    model.fit_generator(train_generator,
-                        steps_per_epoch=len(train_img_list)//batch_size,
-                        epochs=args['epochs'],
-                        validation_data=valid_generator,
-                        validation_steps=len(valid_img_list)//batch_size,
-                        verbose=1)
+    model_info = model.fit_generator(train_generator,
+                                     steps_per_epoch=len(train_img_list)//batch_size,
+                                     epochs=args['epochs'],
+                                     validation_data=valid_generator,
+                                     validation_steps=len(valid_img_list)//batch_size,
+                                     verbose=1)
 
 
     print('[INFO] Evaluating...')
-    (loss, accuracy) = model.evaluate_generator(
-        test_generator, steps=len(test_img_list)//batch_size)
+    (loss, accuracy) = model.evaluate_generator(test_generator,
+                                                steps=len(test_img_list)//batch_size)
     print('[INFO] Accuracy: {:.2f}%'.format(accuracy * 100))
 
-if args['save_model'] > 0:
-    print('[INFO] Dumping weights to file...')
-    model.save_weights(args['weights_path'], overwrite=True)
+# if args['save_model'] > 0:
+#     print('[INFO] Dumping weights to file...')
+#     model.save_weights(args['weights_path'], overwrite=True)

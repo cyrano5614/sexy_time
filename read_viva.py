@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 from random import random
 from keras.utils import np_utils
 from keras.applications.xception import preprocess_input
+from time import sleep
 
 
 class Point(object):
@@ -43,7 +44,7 @@ def load_viva(path):
     """
 
     train_img_path = path + 'train/pos/'
-    train_box_path = path + 'train/posGt/' 
+    train_box_path = path + 'train/posGt/'
 
     train_img_list = sorted(glob.glob(train_img_path + '*'))
     train_box_list = sorted(glob.glob(train_box_path + '*'))
@@ -174,6 +175,12 @@ def crop_images(img_path, box_path, img_size, negative=False):
 
             # NOTE: keep in mind height and row switching in numpy array!!
             cropped = img[box[1][1]:box[2][1], box[1][0]:box[2][0], :]
+            # print(cropped.shape)
+            if cropped.shape[0] == 0 & cropped.shape[1] == 0:
+                print("0 Size image error!")
+                print(img_path)
+                print(box_path)
+                raise ValueError("WTF YO")
             cropped = cv2.resize(cropped, img_size)
             out_images.append(cropped)
             # out_labels.append('HAND')
@@ -182,75 +189,99 @@ def crop_images(img_path, box_path, img_size, negative=False):
         return out_images, out_labels
 
 
-def generate_batch(img_list, box_list, img_size, batch_size,
-                   negative=False,
-                   model=None,
-                   bottleneck=False):
-    """generate_batch
-    Takes file paths and generate a batch of images and labels to plugin to
-    training pipeline.  Augmentation can be also implemented here.
-
-    :param img_list: list of image file path
-    :param box_list: list of box file path
-    :param img_size: img size for the generator to generate
-    :param batch_size: batch size
+class DataGen(object):
+    """DataGen
+    Custom DataGenerator
     """
 
-    while True:
+    def __init__(self, img_size, batch_size, shuffle=True,
+                 negative=False, model=None, bottleneck=False):
+        """__init__
 
-        batch_images = np.empty((batch_size, img_size[0],
-                                 img_size[1], 3))
-        # batch_labels = np.empty(batch_size, str)
-        # Change this later to numpy array with one hot encoding possibly
-        batch_labels = []
+        :param img_size:
+        :param batch_size:
+        :param shuffle:
+        :param negative:
+        :param model:
+        :param bottleneck:
+        """
 
-        batch_full = False
+        self.img_size = img_size
+        self.batch_size = batch_size
+        self.shuffle = shuffle
+        self.negative = negative
+        self.model = model
+        self.bottleneck = bottleneck
 
-        batch_count = 0
+    def generate_train(self, img_list, box_list):
 
-        while batch_full == False:
+        """generate_batch
+        Takes file paths and generate a batch of images and labels to plugin to
+        training pipeline.  Augmentation can be also implemented here.
 
-            index = np.random.randint(0, len(img_list))
-            img_path = img_list[index]
-            box_path = box_list[index]
+        :param img_list: list of image file path
+        :param box_list: list of box file path
+        :param img_size: img size for the generator to generate
+        :param batch_size: batch size
+        """
 
-            if negative == True:
+        while True:
 
-                if random() < 0.5:
+            batch_images = np.empty((self.batch_size, self.img_size[0],
+                                     self.img_size[1], 3))
+            # batch_labels = np.empty(batch_size, str)
+            # Change this later to numpy array with one hot encoding possibly
+            batch_labels = []
 
-                    out_images, out_labels = crop_images(img_path, box_path,
-                                                         img_size=img_size)
+            batch_full = False
 
+            batch_count = 0
+
+            while not batch_full:
+
+                index = np.random.randint(0, len(img_list))
+                img_path = img_list[index]
+                box_path = box_list[index]
+
+                if self.negative:
+
+                    if random() < 0.5:
+
+                        out_images, out_labels = crop_images(img_path, box_path,
+                                                             img_size=self.img_size)
+
+                    else:
+
+                        out_images, out_labels = crop_images(img_path, box_path,
+                                                             img_size=self.img_size,
+                                                             negative=True)
                 else:
 
                     out_images, out_labels = crop_images(img_path, box_path,
-                                                         img_size=img_size,
-                                                         negative=True)
-            else:
+                                                         img_size=self.img_size)
 
-                out_images, out_labels = crop_images(img_path, box_path,
-                                                     img_size=img_size)
+                for img, label in zip(out_images, out_labels):
 
-            for img, label in zip(out_images, out_labels):
+                    batch_images[batch_count] = img
+                    batch_labels.append(label)
+                    batch_count += 1
 
-                batch_images[batch_count] = img
-                batch_labels.append(label)
-                batch_count += 1
+                    if batch_count == self.batch_size:
+                        batch_full = True
+                        batch_labels = np_utils.to_categorical(batch_labels, 2)
+                        break
 
-                if batch_count == batch_size:
-                    batch_full = True
-                    batch_labels = np_utils.to_categorical(batch_labels, 2)
-                    break
+            if self.bottleneck and self.model:
 
-        if bottleneck is True and model:
+                batch_images = preprocess_input(batch_images)
+                batch_images = self.model.predict_on_batch(batch_images)
 
-            batch_images = preprocess_input(batch_images)
-            batch_images = model.predict_on_batch(batch_images)
-
-        yield batch_images, batch_labels
+            # print("\nNew Batch Generated with {} images and {} labels!\n".format(len(batch_images), len(batch_labels)))
+            yield batch_images, batch_labels
 
 
 def batch_visualize(batch_images, batch_labels):
+
     """batch_visualize
     Visualize batch of generate images along with labels
 
@@ -266,6 +297,32 @@ def batch_visualize(batch_images, batch_labels):
         plt.imshow(batch_images[i])
         plt.title(batch_labels[i])
 
+    plt.show()
+
+
+def plot_model_history(model_history):
+    """plot_model_history
+    plot accuracy and loss graph vs epoch.
+
+    :param model_history:
+    """
+    fig, axs = plt.subplots(1, 2, figsize=(15, 5))
+    # summarize history for accuracy
+    axs[0].plot(range(1, len(model_history.history['acc'])+1), model_history.history['acc'])
+    axs[0].plot(range(1, len(model_history.history['val_acc'])+1), model_history.history['val_acc'])
+    axs[0].set_title('Model Accuracy')
+    axs[0].set_ylabel('Accuracy')
+    axs[0].set_xlabel('Epoch')
+    axs[0].set_xticks(np.arange(1, len(model_history.history['acc'])+1), len(model_history.history['acc'])/10)
+    axs[0].legend(['train', 'val'], loc='best')
+    # summarize history for loss
+    axs[1].plot(range(1, len(model_history.history['loss'])+1), model_history.history['loss'])
+    axs[1].plot(range(1, len(model_history.history['val_loss'])+1), model_history.history['val_loss'])
+    axs[1].set_title('Model Loss')
+    axs[1].set_ylabel('Loss')
+    axs[1].set_xlabel('Epoch')
+    axs[1].set_xticks(np.arange(1, len(model_history.history['loss'])+1), len(model_history.history['loss'])/10)
+    axs[1].legend(['train', 'val'], loc='best')
     plt.show()
 
 
