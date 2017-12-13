@@ -161,6 +161,13 @@ def crop_images(img_path, box_path, img_size, negative=False):
 
                     # NOTE: another caution for row and height...
                     cropped = img[x_1:x_2, y_1:y_2, :]
+
+                    if cropped.shape[0] == 0 & cropped.shape[1] == 0:
+                        print("0 Size image error!")
+                        print(img_path)
+                        print(box_path)
+                        raise ValueError("WTF YO")
+
                     cropped = cv2.resize(cropped, img_size)
                     out_images.append(cropped)
                     # out_labels.append('WTF MATE')

@@ -60,6 +60,7 @@ model_name = args['model']
 if model_name == 'xception':
 
     bottleneck_model = pretrained_model('Xception', img_size)
+    bottleneck_model._make_predict_function()
 
     train_generator = DataGen(img_size,
                               batch_size,
