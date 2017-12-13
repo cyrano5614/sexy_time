@@ -126,6 +126,7 @@ if args['load_model'] < 1:
                                      epochs=args['epochs'],
                                      validation_data=valid_generator,
                                      validation_steps=len(valid_img_list)//batch_size,
+                                     callbacks=[checkpointer, early],
                                      verbose=1)
 
 
@@ -133,7 +134,3 @@ if args['load_model'] < 1:
     (loss, accuracy) = model.evaluate_generator(test_generator,
                                                 steps=len(test_img_list)//batch_size)
     print('[INFO] Accuracy: {:.2f}%'.format(accuracy * 100))
-
-# if args['save_model'] > 0:
-#     print('[INFO] Dumping weights to file...')
-#     model.save_weights(args['weights_path'], overwrite=True)
