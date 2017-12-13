@@ -5,7 +5,6 @@ from pipeline import pretrained_model
 from keras.optimizers import SGD
 from keras.utils import np_utils
 from sklearn.model_selection import train_test_split
-from keras.callbacks import ModelCheckpoint, EarlyStopping
 import numpy as np
 import argparse
 import cv2
@@ -44,9 +43,6 @@ train_img_list, train_box_list, test_img_list, test_box_list = load_viva(path)
 # Splitting into train validation 75/25
 train_img_list, valid_img_list, train_box_list, valid_box_list = train_test_split(
     train_img_list, train_box_list, test_size=0.25)
-print('[INFO] Loaded {} training images'.format(len(train_img_list)))
-print('[INFO] Loaded {} validation images'.format(len(valid_img_list)))
-print('[INFO] Loaded {} testing images'.format(len(test_img_list)))
 
 
 """
@@ -100,24 +96,9 @@ model.compile(loss='categorical_crossentropy',
 Model Fitting & Evaluating
 """
 if args['load_model'] < 1:
-
     print('[INFO] Training...')
-
-    checkpointer = ModelCheckpoint(filepath='./models/weights.best.{}.hdf5'.format(model.name),
-                                   verbose=1, save_best_only=True)
-
-    early = EarlyStopping(monitor='val_acc',
-                          min_delta=0,
-                          patience=10,
-                          verbose=1)
-
-    model.fit_generator(train_generator,
-                        steps_per_epoch=len(train_img_list)//batch_size,
-                        epochs=args['epochs'],
-                        validation_data=valid_generator,
-                        validation_steps=len(valid_img_list)//batch_size,
-                        verbose=1)
-
+    model.fit_generator(train_generator, steps_per_epoch=len(train_img_list)//batch_size, epochs=args['epochs'],
+                        validation_data=valid_generator, validation_steps=len(valid_img_list)//batch_size, verbose=1)
 
     print('[INFO] Evaluating...')
     (loss, accuracy) = model.evaluate_generator(
