@@ -120,11 +120,14 @@ if args['load_model'] < 1:
                           patience=10,
                           verbose=1)
 
+    callback_list = [checkpointer, early]
+
     model_info = model.fit_generator(train_generator,
                                      steps_per_epoch=len(train_img_list)//batch_size,
                                      epochs=args['epochs'],
                                      validation_data=valid_generator,
                                      validation_steps=len(valid_img_list)//batch_size,
+                                     callbacks=callback_list,
                                      verbose=1)
 
 

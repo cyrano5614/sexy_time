@@ -162,11 +162,16 @@ def crop_images(img_path, box_path, img_size, negative=False):
                     # NOTE: another caution for row and height...
                     cropped = img[x_1:x_2, y_1:y_2, :]
 
-                    if cropped.shape[0] == 0 & cropped.shape[1] == 0:
-                        print("0 Size image error!")
-                        print(img_path)
-                        print(box_path)
-                        raise ValueError("WTF YO")
+                    print("NEGATIVE")
+                    print(cropped.shape)
+                    print(img_path)
+                    print(box_path)
+                    if int(cropped.shape[0]) == 0 or int(cropped.shape[1]) == 0:
+                        break
+                        # print("0 Size image error!")
+                        # print(img_path)
+                        # print(box_path)
+                        # raise ValueError("WTF YO")
 
                     cropped = cv2.resize(cropped, img_size)
                     out_images.append(cropped)
@@ -182,12 +187,15 @@ def crop_images(img_path, box_path, img_size, negative=False):
 
             # NOTE: keep in mind height and row switching in numpy array!!
             cropped = img[box[1][1]:box[2][1], box[1][0]:box[2][0], :]
-            # print(cropped.shape)
-            if cropped.shape[0] == 0 & cropped.shape[1] == 0:
-                print("0 Size image error!")
-                print(img_path)
-                print(box_path)
-                raise ValueError("WTF YO")
+            print(cropped.shape)
+            print(img_path)
+            print(box_path)
+            if int(cropped.shape[0]) == 0 or int(cropped.shape[1]) == 0:
+                break
+                # print("0 Size image error!")
+                # print(img_path)
+                # print(box_path)
+                # raise ValueError("WTF YO")
             cropped = cv2.resize(cropped, img_size)
             out_images.append(cropped)
             # out_labels.append('HAND')
@@ -266,6 +274,13 @@ class DataGen(object):
 
                     out_images, out_labels = crop_images(img_path, box_path,
                                                          img_size=self.img_size)
+
+                # Check if any images returned from cropping
+                if len(out_images) < 1:
+                    break
+
+                if len(out_images) != len(out_labels):
+                    raise ValueError("Images and Lables not matching!")
 
                 for img, label in zip(out_images, out_labels):
 
