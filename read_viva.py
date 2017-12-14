@@ -162,10 +162,10 @@ def crop_images(img_path, box_path, img_size, negative=False):
                     # NOTE: another caution for row and height...
                     cropped = img[x_1:x_2, y_1:y_2, :]
 
-                    print("NEGATIVE")
-                    print(cropped.shape)
-                    print(img_path)
-                    print(box_path)
+                    # print("NEGATIVE")
+                    # print(cropped.shape)
+                    # print(img_path)
+                    # print(box_path)
                     if int(cropped.shape[0]) == 0 or int(cropped.shape[1]) == 0:
                         break
                         # print("0 Size image error!")
@@ -187,9 +187,9 @@ def crop_images(img_path, box_path, img_size, negative=False):
 
             # NOTE: keep in mind height and row switching in numpy array!!
             cropped = img[box[1][1]:box[2][1], box[1][0]:box[2][0], :]
-            print(cropped.shape)
-            print(img_path)
-            print(box_path)
+            # print(cropped.shape)
+            # print(img_path)
+            # print(box_path)
             if int(cropped.shape[0]) == 0 or int(cropped.shape[1]) == 0:
                 break
                 # print("0 Size image error!")
@@ -209,8 +209,8 @@ class DataGen(object):
     Custom DataGenerator
     """
 
-    def __init__(self, img_size, batch_size, shuffle=True,
-                 negative=False, model=None, bottleneck=False):
+    def __init__(self, img_size, batch_size, verbose=0, 
+                 shuffle=True, negative=False, model=None, bottleneck=False):
         """__init__
 
         :param img_size:
@@ -227,6 +227,7 @@ class DataGen(object):
         self.negative = negative
         self.model = model
         self.bottleneck = bottleneck
+        self.verbose = verbose
 
     def generate_train(self, img_list, box_list):
 
@@ -299,6 +300,9 @@ class DataGen(object):
                 batch_images = self.model.predict_on_batch(batch_images)
 
             # print("\nNew Batch Generated with {} images and {} labels!\n".format(len(batch_images), len(batch_labels)))
+            if self.verbose:
+                print(len(batch_images), batch_images[0].shape)
+                print(len(np.unique(batch_labels)), batch_labels[0])
             yield batch_images, batch_labels
 
 
@@ -330,22 +334,29 @@ def plot_model_history(model_history):
     """
     fig, axs = plt.subplots(1, 2, figsize=(15, 5))
     # summarize history for accuracy
-    axs[0].plot(range(1, len(model_history.history['acc'])+1), model_history.history['acc'])
-    axs[0].plot(range(1, len(model_history.history['val_acc'])+1), model_history.history['val_acc'])
+    axs[0].plot(range(1, len(model_history.history['acc'])+1),
+                model_history.history['acc'])
+    axs[0].plot(range(1, len(model_history.history['val_acc'])+1),
+                model_history.history['val_acc'])
     axs[0].set_title('Model Accuracy')
     axs[0].set_ylabel('Accuracy')
     axs[0].set_xlabel('Epoch')
-    axs[0].set_xticks(np.arange(1, len(model_history.history['acc'])+1), len(model_history.history['acc'])/10)
+    axs[0].set_xticks(np.arange(1, len(model_history.history['acc'])+1),
+                      len(model_history.history['acc'])/10)
     axs[0].legend(['train', 'val'], loc='best')
     # summarize history for loss
-    axs[1].plot(range(1, len(model_history.history['loss'])+1), model_history.history['loss'])
-    axs[1].plot(range(1, len(model_history.history['val_loss'])+1), model_history.history['val_loss'])
+    axs[1].plot(range(1, len(model_history.history['loss'])+1),
+                model_history.history['loss'])
+    axs[1].plot(range(1, len(model_history.history['val_loss'])+1),
+                model_history.history['val_loss'])
     axs[1].set_title('Model Loss')
     axs[1].set_ylabel('Loss')
     axs[1].set_xlabel('Epoch')
-    axs[1].set_xticks(np.arange(1, len(model_history.history['loss'])+1), len(model_history.history['loss'])/10)
+    axs[1].set_xticks(np.arange(1, len(model_history.history['loss'])+1),
+                      len(model_history.history['loss'])/10)
     axs[1].legend(['train', 'val'], loc='best')
-    plt.show()
+    fig.savefig('./plots/performance.png', bbox_inches='tight')
+    # plt.show()
 
 
 def main():
