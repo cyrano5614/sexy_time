@@ -23,11 +23,11 @@ def slide_window(img, x_start_stop=[None, None], y_start_stop=[None, None],
     if x_start_stop[0] == None:
         x_start_stop[0] = 0
     if x_start_stop[1] == None:
-        x_start_stop[1] = img.shape[2]
+        x_start_stop[1] = img.shape[1]
     if y_start_stop[0] == None:
         y_start_stop[0] = 0
     if y_start_stop[1] == None:
-        y_start_stop[1] = img.shape[1]
+        y_start_stop[1] = img.shape[0]
     print('Starting sliding window {} from {}, {} to {}, {}'.format(
         xy_window, x_start_stop[0], y_start_stop[0], x_start_stop[1], y_start_stop[1]))
     # Compute the span of the region to be searched
@@ -56,13 +56,13 @@ def slide_window(img, x_start_stop=[None, None], y_start_stop=[None, None],
             endy = starty + xy_window[1]
 
             # Append window position to list
-            window_list.append(((startx, starty), (endx, endy)))
+            window_list.append(((starty, startx), (endy, endx)))
     # Return the list of windows
     print('Finished with {} windows to slide'.format(len(window_list)))
     return window_list
 
 
-def search_windows(prediction_method, img, windows, xy_window=(64, 64)):
+def search_windows(prediction_method, img_size, img, windows, xy_window=(64, 64)):
     """search_windows
     Uses the prediction method to determine which windows that are positive
     Returns a list of windows
@@ -77,8 +77,8 @@ def search_windows(prediction_method, img, windows, xy_window=(64, 64)):
     print('Starting to search {} windows'.format(len(windows)))
     on_windows = []
     for window in windows:
-        crop_img = cv2.resize(img[0][window[0][1]:window[1][1], window[
-                              0][0]:window[1][0]], (224, 224))
+        crop_img = img[window[0][0]:window[1][0], window[0][1]:window[1][1], :3]
+        crop_img = cv2.resize(crop_img, img_size)
         crop_img = np.expand_dims(crop_img, axis=0)
         prediction = prediction_method(crop_img)
         if prediction:
