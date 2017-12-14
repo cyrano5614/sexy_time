@@ -44,9 +44,10 @@ train_img_list, train_box_list, test_img_list, test_box_list = load_viva(path)
 # Splitting into train validation 75/25
 train_img_list, valid_img_list, train_box_list, valid_box_list = train_test_split(
     train_img_list, train_box_list, test_size=0.25)
-print('[INFO] Loaded {} training data'.format(len(train_img_list)))
-print('[INFO] Loaded {} validation data'.format(len(valid_img_list)))
-print('[INFO] Loaded {} testing data'.format(len(test_img_list)))
+print('[INFO] Loaded {} training images'.format(len(train_img_list)))
+print('[INFO] Loaded {} validation images'.format(len(valid_img_list)))
+print('[INFO] Loaded {} testing images'.format(len(test_img_list)))
+
 
 """
 Model Compilation
@@ -139,7 +140,3 @@ if args['load_model'] < 1:
                                                 10)
 
     print('[INFO] Accuracy: {:.2f}%'.format(accuracy * 100))
-
-# if args['save_model'] > 0:
-#     print('[INFO] Dumping weights to file...')
-#     model.save_weights(args['weights_path'], overwrite=True)
