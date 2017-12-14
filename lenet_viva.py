@@ -1,6 +1,6 @@
 from viva.cnn.networks.lenet import LeNet
 from viva.cnn.networks.xception_transfer import Xception_Transfer
-from read_viva import load_viva, DataGen
+from read_viva import load_viva, DataGen, plot_model_history
 from pipeline import pretrained_model
 from keras.optimizers import SGD
 from keras.utils import np_utils
@@ -97,8 +97,9 @@ else:
                               negative=True).generate_train(valid_img_list,
                                                                    valid_box_list)
     test_generator = DataGen(img_size,
-                              batch_size,
-                              negative=True).generate_train(test_img_list,
+                             batch_size,
+                             negative=True,
+                             verbose=0).generate_train(test_img_list,
                                                                    test_box_list)
 
 # categorical cross-entropy for loss function
@@ -121,16 +122,21 @@ if args['load_model'] < 1:
                           patience=10,
                           verbose=1)
 
+    callback_list = [checkpointer, early]
+
     model_info = model.fit_generator(train_generator,
                                      steps_per_epoch=len(train_img_list)//batch_size,
                                      epochs=args['epochs'],
                                      validation_data=valid_generator,
                                      validation_steps=len(valid_img_list)//batch_size,
-                                     callbacks=[checkpointer, early],
+                                     callbacks=callback_list,
                                      verbose=1)
 
+    plot_model_history(model_info)
 
     print('[INFO] Evaluating...')
+
     (loss, accuracy) = model.evaluate_generator(test_generator,
-                                                steps=len(test_img_list)//batch_size)
+                                                10)
+
     print('[INFO] Accuracy: {:.2f}%'.format(accuracy * 100))
