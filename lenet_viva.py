@@ -80,6 +80,9 @@ if model_name == 'xception':
                               model=bottleneck_model).generate_train(test_img_list, test_box_list)
 
     x, y, z = bottleneck_model.output.shape[1:]
+    print('X: {}'.format(x))
+    print('Y: {}'.format(y))
+    print('Z: {}'.format(z))
 
     model = Xception_Transfer.build((int(x), int(y), int(z)), 2)
 

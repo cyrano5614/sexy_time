@@ -8,7 +8,7 @@ from scipy.ndimage.measurements import label
 
 
 def slide_window(img, x_start_stop=[None, None], y_start_stop=[None, None],
-                 xy_window=(64, 64), xy_overlap=(0.5, 0.5)):
+                 xy_window=(64, 64), xy_overlap=(0.75, 0.75)):
     """slide_window
     Creates windows across the given image
     Returns a list of windows
@@ -56,7 +56,7 @@ def slide_window(img, x_start_stop=[None, None], y_start_stop=[None, None],
             endy = starty + xy_window[1]
 
             # Append window position to list
-            window_list.append(((starty, startx), (endy, endx)))
+            window_list.append(((startx, starty), (endx, endy)))
     # Return the list of windows
     print('Finished with {} windows to slide'.format(len(window_list)))
     return window_list
@@ -77,13 +77,12 @@ def search_windows(prediction_method, img_size, img, windows, xy_window=(64, 64)
     print('Starting to search {} windows'.format(len(windows)))
     on_windows = []
     for window in windows:
-        crop_img = img[window[0][0]:window[1][0], window[0][1]:window[1][1], :3]
+        crop_img = img[window[0][1]:window[1][1], window[0][0]:window[1][0], :3]
         crop_img = cv2.resize(crop_img, img_size)
         crop_img = np.expand_dims(crop_img, axis=0)
         prediction = prediction_method(crop_img)
         if prediction:
             on_windows.append(window)
-            print('Found window: {}'.format({window}))
 
     print('Finished searching windows with {} results'.format(len(on_windows)))
     return on_windows
