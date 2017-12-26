@@ -83,7 +83,6 @@ def search_windows(prediction_method, img_size, img, windows, xy_window=(64, 64)
         prediction = prediction_method(crop_img)
         if prediction:
             on_windows.append(window)
-            print('Found window: {}'.format({window}))
 
     print('Finished searching windows with {} results'.format(len(on_windows)))
     return on_windows
@@ -120,7 +119,7 @@ def add_heat(heatmap, bbox_list):
     for box in bbox_list:
         # Add += 1 for all pixels inside each bbox
         # Assuming each "box" takes the form ((x1, y1), (x2, y2))
-        heatmap[box[0][0]:box[1][0], box[0][1]:box[1][1]] += 1
+        heatmap[box[0][1]:box[1][1], box[0][0]:box[1][0]] += 1
 
     # Return updated heatmap
     return heatmap
